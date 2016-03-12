@@ -63,3 +63,9 @@ target/
 
 # Twitter API keys
 twitter_credentials.py
+
+# data
+*.csv
+
+# misc
+.DS_store
