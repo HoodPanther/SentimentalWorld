@@ -15,7 +15,7 @@ def main():
 			mood = []
 			counter = 0
 			with open(fn, 'rb') as f:
-				spamreader = csv.reader(f, delimiter=' ', quotechar='|')
+				spamreader = csv.reader(f, delimiter=',', quotechar='|')
 				for row in spamreader:
 					mood.append(float(row[1]))
 					if prev_time == 0:
