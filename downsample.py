@@ -3,7 +3,7 @@
 
 def main():
 	import numpy as np
-	import sched, time, csv, os
+	import sched, time, csv, os, StringIO
 	
 	def downsample(files, outfile, R):
 		with open(outfile, 'wb') as f:
@@ -14,16 +14,31 @@ def main():
 			prev_time = 0
 			mood = []
 			counter = 0
-			with open(fn, 'rb') as f:
-				spamreader = csv.reader(f, delimiter=',', quotechar='|')
-				for row in spamreader:
+			# with open(fn, 'rb') as f:
+			# 	spamreader = csv.reader(f, delimiter=',', quotechar='|')
+			# 	for row in spamreader:
+
+			f = file(fn)
+			f.seek(0,2)
+			lastline = f.tell()
+			f.seek(0)
+			while f.tell() < lastline:
+				where = f.tell()
+				line = f.readline()
+				if not line:
+					time.sleep(1)
+					f.seek(where)
+				else:
+					a = StringIO.StringIO(line)
+					reader = csv.reader(a, delimiter=',')
+					row = list(reader)[0]
 					mood.append(float(row[1]))
 					if prev_time == 0:
 						prev_time = float(row[0])
 						continue
 					if float(row[0]) - prev_time > R:
-						with open(outfile, 'ab') as f:
-							spamwriter = csv.writer(f, delimiter=',',
+						with open(outfile, 'ab') as outf:
+							spamwriter = csv.writer(outf, delimiter=',',
 													quotechar='|', quoting=csv.QUOTE_MINIMAL)
 							spamwriter.writerow([float(row[0])-60, np.mean(mood)])
 						mood = []
