@@ -57,7 +57,7 @@ def main():
 					mood = sid.polarity_scores(tweet.text)['compound']
 
 					with open(fn, 'ab') as csvfile:
-							spamwriter = csv.writer(csvfile, delimiter=' ',
+							spamwriter = csv.writer(csvfile, delimiter=',',
 													quotechar='|', quoting=csv.QUOTE_MINIMAL)
 							spamwriter.writerow([time(), mood])
 
