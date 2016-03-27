@@ -81,4 +81,4 @@ def main():
 
 	myStream.filter(track=['Sanders, Clinton, Trump, Ted Cruz'], languages=['en'])
 
-if __name__ == ‘__main__’: main()
+if __name__ == '__main__': main()
