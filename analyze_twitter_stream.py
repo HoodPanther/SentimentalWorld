@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 def main():
 	from twitter_credentials import *
 	from nltk.sentiment.vader import SentimentIntensityAnalyzer
