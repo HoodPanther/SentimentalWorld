@@ -26,7 +26,7 @@ def main():
 				where = f.tell()
 				line = f.readline()
 				if not line:
-					time.sleep(1)
+					time.sleep(0.1)
 					f.seek(where)
 				else:
 					a = StringIO.StringIO(line)
