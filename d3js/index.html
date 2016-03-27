@@ -9,7 +9,14 @@
 </head>
 <body>
 
+<main>
+
+<h1>How Twitter feels about the 2016 USA presidential candidates</h1>
+<h2>Live sentiment analysis on the public Twitter stream (updates every 10 minutes)</h2>
+
 <svg id="visualisation" width="1000" height="500"></svg>
+
+</main>
 
 <script>
 
@@ -44,7 +51,7 @@ d3.csv('data_cruz_downsampled.csv', function(error, data) {
 	var xAxis = d3.svg.axis()
 		.scale(xScale)         // x is the d3.time.scale()
 		.orient('bottom') // the ticks go below the graph
-		.ticks(4);        // specify the number of ticks
+		.ticks(9);        // specify the number of ticks
 
 	var yAxis = d3.svg.axis()
 		.scale(yScale)
@@ -161,6 +168,10 @@ d3.csv('data_cruz_downsampled.csv', function(error, data) {
 		      .attr('x', MARGINS.left + 10)
 
 });
+
+var refreshTimer = setInterval(function(){
+	location.reload();
+}, 1000 * 60 * 10); // refresh every 10 minutes
 </script>
 
 </body>
