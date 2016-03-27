@@ -36,30 +36,30 @@ def main():
 				if 'sanders' in lower:
 					fn = 'data_sanders_'+str(self.sanders_counter).zfill(5)+'.csv'
 					file_size = os.path.getsize(fn)
-	            	if file_size > self.data_limit: # if file too lage, start a new file
-	            		self.sanders_counter += 1
+					if file_size > self.data_limit: # if file too lage, start a new file
+						self.sanders_counter += 1
 				elif 'clinton' in lower:
 					fn = 'data_clinton_'+str(self.clinton_counter.zfill(5))+'.csv'
 					file_size = os.path.getsize(fn)
-	            	if file_size > self.data_limit:
-	            		self.clinton_counter += 1
+					if file_size > self.data_limit:
+						self.clinton_counter += 1
 				elif 'trump' in lower:
 					fn = 'data_trump_'+str(self.trump_counter).zfill(5)+'.csv'
 					file_size = os.path.getsize(fn)
-	            	if file_size > self.data_limit:
-	            		self.trump_counter += 1
+					if file_size > self.data_limit:
+						self.trump_counter += 1
 				elif 'cruz' in lower:
 					fn = 'data_cruz_'+str(self.cruz_counter).zfill(5)+'.csv'
 					file_size = os.path.getsize(fn)
-	            	if file_size > self.data_limit:
-	            		self.cruz_counter += 1
+					if file_size > self.data_limit:
+						self.cruz_counter += 1
 				else:
 					fn = 'data_unknown_'+str(self.unknown_counter).zfill(5)+'.csv'
 					file_size = os.path.getsize(fn)
-	            	if file_size > self.data_limit:
-	            		self.unknown_counter += 1
+					if file_size > self.data_limit:
+						self.unknown_counter += 1
 
-	            mood = sid.polarity_scores(tweet.text)['compound']
+				mood = sid.polarity_scores(tweet.text)['compound']
 
 				with open(fn, 'ab') as csvfile:
 						spamwriter = csv.writer(csvfile, delimiter=' ',
