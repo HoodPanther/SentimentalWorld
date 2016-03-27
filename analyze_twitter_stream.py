@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from twitter_credentials import *
+
 def main():
-	from twitter_credentials import *
 	from nltk.sentiment.vader import SentimentIntensityAnalyzer
 	from time import time
 	import csv
@@ -20,11 +21,13 @@ def main():
 	class MyStreamListener(tweepy.StreamListener):
 		
 		limit = 0
-		sanders_counter = 0
-		clinton_counter = 0
-		trump_counter = 0
-		cruz_counter = 0
-		unknown_counter = 0
+		counter = {
+			'sanders': 0,
+			'clinton': 0,
+			'trump': 0,
+			'cruz': 0,
+			'unknown': 0
+		}
 		data_limit = 1e8
 
 		def on_status(self, tweet):
@@ -37,30 +40,17 @@ def main():
 				lower = tweet.text.lower() # convert to lower case
 				
 				if 'sanders' in lower:
-					fn = 'data_sanders_'+str(self.sanders_counter).zfill(5)+'.csv'
-					file_size = os.path.getsize(fn)
-					if file_size > self.data_limit: # if file too lage, start a new file
-						self.sanders_counter += 1
+					candidate = 'sanders'
 				elif 'clinton' in lower:
-					fn = 'data_clinton_'+str(self.clinton_counter.zfill(5))+'.csv'
-					file_size = os.path.getsize(fn)
-					if file_size > self.data_limit:
-						self.clinton_counter += 1
+					candidate = 'clinton'
 				elif 'trump' in lower:
-					fn = 'data_trump_'+str(self.trump_counter).zfill(5)+'.csv'
-					file_size = os.path.getsize(fn)
-					if file_size > self.data_limit:
-						self.trump_counter += 1
+					candidate = 'trump'
 				elif 'cruz' in lower:
-					fn = 'data_cruz_'+str(self.cruz_counter).zfill(5)+'.csv'
-					file_size = os.path.getsize(fn)
-					if file_size > self.data_limit:
-						self.cruz_counter += 1
+					candidate = 'cruz'
 				else:
-					fn = 'data_unknown_'+str(self.unknown_counter).zfill(5)+'.csv'
-					file_size = os.path.getsize(fn)
-					if file_size > self.data_limit:
-						self.unknown_counter += 1
+					candidate = 'unknown'
+
+				fn = 'data_'+candidate+'_'+str(self.counter[candidate]).zfill(5)+'.csv'
 
 				mood = sid.polarity_scores(tweet.text)['compound']
 
@@ -68,6 +58,10 @@ def main():
 						spamwriter = csv.writer(csvfile, delimiter=' ',
 												quotechar='|', quoting=csv.QUOTE_MINIMAL)
 						spamwriter.writerow([time(), mood])
+
+				file_size = os.path.getsize(fn)
+				if file_size > self.data_limit:
+					self.counter[candidate] += 1
 			
 		def on_error(self, status_code):
 			print status_code
