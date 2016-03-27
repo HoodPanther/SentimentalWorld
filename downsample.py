@@ -32,8 +32,6 @@ def main():
 					a = StringIO.StringIO(line)
 					reader = csv.reader(a, delimiter=',')
 					row = list(reader)[0]
-					if len(row) < 2:
-						print row
 					mood.append(float(row[1]))
 					if prev_time == 0:
 						prev_time = float(row[0])
@@ -50,20 +48,13 @@ def main():
 
 	s = sched.scheduler(time.time, time.sleep)
 	def do_something(sc):
-
-		print 'Downsampling...'
-		
 		files = os.listdir('.')
 		files = [fn for fn in files if fn.endswith('.csv')]
 
 		files_sanders = sorted([fn for fn in files if 'data_sanders' in fn])
-		print files_sanders
 		files_trump = sorted([fn for fn in files if 'data_trump' in fn])
-		print files_trump
 		files_clinton = sorted([fn for fn in files if 'data_clinton' in fn])
-		print files_clinton
 		files_cruz = sorted([fn for fn in files if 'data_cruz' in fn])
-		print files_cruz
 
 		downsample(files_sanders, '../jeroendelcour.nl/public/2016election/data_sanders_downsampled.csv', R)
 		downsample(files_trump, '../jeroendelcour.nl/public/2016election/data_trump_downsampled.csv', R)
