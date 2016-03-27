@@ -28,7 +28,7 @@ def main():
 			
 			if hasattr(tweet, 'text'):
 
-				if hasattr(tweet, 'retweeted_status'):
+				if hasattr(tweet, 'retweeted_status'): # twitter sends newlines sometimes to keep the connection alive
 					tweet = tweet.retweeted_status
 				
 				lower = tweet.text.lower() # convert to lower case
@@ -36,7 +36,7 @@ def main():
 				if 'sanders' in lower:
 					fn = 'data_sanders_'+str(self.sanders_counter).zfill(5)+'.csv'
 					file_size = os.path.getsize(fn)
-	            	if file_size > self.data_limit:
+	            	if file_size > self.data_limit: # if file too lage, start a new file
 	            		sanders_counter += 1
 				elif 'clinton' in lower:
 					fn = 'data_clinton_'+str(self.clinton_counter.zfill(5))+'.csv'
@@ -59,10 +59,12 @@ def main():
 	            	if file_size > self.data_limit:
 	            		unknown_counter += 1
 
+	            mood = sid.polarity_scores(tweet.text)['compound']
+
 				with open(fn, 'ab') as csvfile:
 						spamwriter = csv.writer(csvfile, delimiter=' ',
 												quotechar='|', quoting=csv.QUOTE_MINIMAL)
-						spamwriter.writerow([time(), sid.polarity_scores(tweet.text)['compound']])
+						spamwriter.writerow([time(), mood])
 			
 		def on_error(self, status_code):
 			print status_code
@@ -72,7 +74,7 @@ def main():
 
 	myStreamListener = MyStreamListener()
 	myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
-	myStream.timeout = 90
+	myStream.timeout = 60*60 # one hour
 
 	myStream.filter(track=['Sanders, Clinton, Trump, Ted Cruz'], languages=['en'])
 
