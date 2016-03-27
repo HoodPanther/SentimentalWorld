@@ -29,7 +29,7 @@ def main():
 						mood = []
 						prev_time = float(row[0])
 
-	R = 10 * 60 # 10 minute bins
+	R = 10 * 60 # run every 10 minutes
 
 	s = sched.scheduler(time.time, time.sleep)
 	def do_something(sc):
@@ -53,6 +53,8 @@ def main():
 		downsample(files_clinton, '../jeroendelcour.nl/public/2016election/data_clinton_downsampled.csv', R)
 		downsample(files_cruz, '../jeroendelcour.nl/public/2016election/data_cruz_downsampled.csv', R)
 		sc.enter(R, 1, do_something, (sc,))
+
+	do_something()
 
 	s.enter(R, 1, do_something, (s,))
 	s.run()
