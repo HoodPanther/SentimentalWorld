@@ -32,6 +32,8 @@ def main():
 					a = StringIO.StringIO(line)
 					reader = csv.reader(a, delimiter=',')
 					row = list(reader)[0]
+					if len(row) < 2:
+						print row
 					mood.append(float(row[1]))
 					if prev_time == 0:
 						prev_time = float(row[0])
@@ -43,7 +45,7 @@ def main():
 							spamwriter.writerow([float(row[0])-60, np.mean(mood)])
 						mood = []
 						prev_time = float(row[0])
-
+			f.close()
 	R = 10 * 60 # run every 10 minutes
 
 	s = sched.scheduler(time.time, time.sleep)
