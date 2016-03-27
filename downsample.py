@@ -54,9 +54,7 @@ def main():
 		downsample(files_cruz, '../jeroendelcour.nl/public/2016election/data_cruz_downsampled.csv', R)
 		sc.enter(R, 1, do_something, (sc,))
 
-	do_something()
-
-	s.enter(R, 1, do_something, (s,))
+	s.enter(1, 1, do_something, (s,))
 	s.run()
 
 
