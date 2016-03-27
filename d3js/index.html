@@ -23,7 +23,7 @@ var vis = d3.select("#visualisation"),
 		left: 50
 	}
 
-d3.csv('data_cruz.csv', function(error, data) {
+d3.csv('data_cruz_downsampled.csv', function(error, data) {
 
 	data.forEach(function(d) {
 		d.date = new Date(+d.date*1000);
@@ -85,7 +85,7 @@ d3.csv('data_cruz.csv', function(error, data) {
 		.attr('stroke-width', 2)
 		.attr('fill', 'none');
 
-	d3.csv('data_clinton.csv', function(error, data2) {
+	d3.csv('data_clinton_downsampled.csv', function(error, data2) {
 
 		data2.forEach(function(d) {
 			d.date = new Date(+d.date*1000);
@@ -100,7 +100,7 @@ d3.csv('data_cruz.csv', function(error, data) {
 
 	});
 
-	d3.csv('data_trump.csv', function(error, data2) {
+	d3.csv('data_trump_downsampled.csv', function(error, data2) {
 
 		data2.forEach(function(d) {
 			d.date = new Date(+d.date*1000);
@@ -115,7 +115,7 @@ d3.csv('data_cruz.csv', function(error, data) {
 
 	});
 
-	d3.csv('data_sanders.csv', function(error, data2) {
+	d3.csv('data_sanders_downsampled.csv', function(error, data2) {
 
 		data2.forEach(function(d) {
 			d.date = new Date(+d.date*1000);
