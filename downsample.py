@@ -6,28 +6,28 @@ def main():
 	import sched, time, csv, os
 	
 	def downsample(files, outfile, R):
-	with open(outfile, 'wb') as f:
-		spamwriter = csv.writer(f, delimiter=',',
-								quotechar='|', quoting=csv.QUOTE_MINIMAL)
-		spamwriter.writerow(['date','mood'])
-	for fn in files:
-		prev_time = 0
-		mood = []
-		counter = 0
-		with open(fn, 'rb') as f:
-			spamreader = csv.reader(f, delimiter=' ', quotechar='|')
-			for row in spamreader:
-				mood.append(float(row[1]))
-				if prev_time == 0:
-					prev_time = float(row[0])
-					continue
-				if float(row[0]) - prev_time > R:
-					with open(outfile, 'ab') as f:
-						spamwriter = csv.writer(f, delimiter=',',
-												quotechar='|', quoting=csv.QUOTE_MINIMAL)
-						spamwriter.writerow([float(row[0])-60, np.mean(mood)])
-					mood = []
-					prev_time = float(row[0])
+		with open(outfile, 'wb') as f:
+			spamwriter = csv.writer(f, delimiter=',',
+									quotechar='|', quoting=csv.QUOTE_MINIMAL)
+			spamwriter.writerow(['date','mood'])
+		for fn in files:
+			prev_time = 0
+			mood = []
+			counter = 0
+			with open(fn, 'rb') as f:
+				spamreader = csv.reader(f, delimiter=' ', quotechar='|')
+				for row in spamreader:
+					mood.append(float(row[1]))
+					if prev_time == 0:
+						prev_time = float(row[0])
+						continue
+					if float(row[0]) - prev_time > R:
+						with open(outfile, 'ab') as f:
+							spamwriter = csv.writer(f, delimiter=',',
+													quotechar='|', quoting=csv.QUOTE_MINIMAL)
+							spamwriter.writerow([float(row[0])-60, np.mean(mood)])
+						mood = []
+						prev_time = float(row[0])
 
 	R = 10 * 60 # 10 minute bins
 
