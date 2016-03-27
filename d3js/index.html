@@ -1,0 +1,167 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Election Twitter sentiment analysis</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name='author' content="Jeroen Delcour">
+	<link rel="stylesheet" href="style.css">
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+
+<svg id="visualisation" width="1000" height="500"></svg>
+
+<script>
+
+var vis = d3.select("#visualisation"),
+	WIDTH = 1000,
+	HEIGHT = 300,
+	MARGINS = {
+		top: 20,
+		right: 20,
+		bottom: 20,
+		left: 50
+	}
+
+d3.csv('data_cruz.csv', function(error, data) {
+
+	data.forEach(function(d) {
+		d.date = new Date(+d.date*1000);
+		d.mood = +d.mood;
+	});
+
+	var xScale = d3.time.scale()
+		.domain([
+		  data[0].date,
+		  data[data.length-1].date
+		])
+		.range([MARGINS.left, WIDTH - MARGINS.right]);
+
+	var yScale = d3.scale.linear()
+	  .domain([-0.5, 0.5])
+	  .range([HEIGHT - MARGINS.top, MARGINS.bottom]); // Seems backwards because SVG is y-down
+
+	var xAxis = d3.svg.axis()
+		.scale(xScale)         // x is the d3.time.scale()
+		.orient('bottom') // the ticks go below the graph
+		.ticks(4);        // specify the number of ticks
+
+	var yAxis = d3.svg.axis()
+		.scale(yScale)
+		.orient('left')
+		.ticks(5);
+
+	var lineGen = d3.svg.line()
+		.x(function(d) {
+		return xScale(d.date);
+		})
+		.y(function(d) {
+		return yScale(d.mood);
+		})
+		.interpolate("basis");
+
+	vis.append('g')            // create a <g> element
+		.attr("class","axis")
+		.attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+		.call(xAxis);            // let the axis do its thing
+
+	vis.append('g')            // create a <g> element
+		.attr("class","axis")
+		.attr("transform", "translate(" + (MARGINS.left) + ",0)")
+		.call(yAxis);            // let the axis do its thing
+
+	// vis.append("text")
+	// 	.attr("class", "y label")
+	// 	.attr("text-anchor", "middle")
+	// 	.attr("y", MARGINS.left - 50)
+	// 	.attr("x", -HEIGHT/2)
+	// 	.attr("dy", ".75em")
+	// 	.attr("transform", "rotate(-90)")
+	// 	.text("Sentiment");
+
+	vis.append('svg:path')
+		.attr('d', lineGen(data))
+		.attr('stroke', 'orange')
+		.attr('stroke-width', 2)
+		.attr('fill', 'none');
+
+	d3.csv('data_clinton.csv', function(error, data2) {
+
+		data2.forEach(function(d) {
+			d.date = new Date(+d.date*1000);
+			d.mood = +d.mood;
+		});
+
+		vis.append('svg:path')
+			.attr('d', lineGen(data2))
+			.attr('stroke', 'green')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+	});
+
+	d3.csv('data_trump.csv', function(error, data2) {
+
+		data2.forEach(function(d) {
+			d.date = new Date(+d.date*1000);
+			d.mood = +d.mood;
+		});
+
+		vis.append('svg:path')
+			.attr('d', lineGen(data2))
+			.attr('stroke', 'red')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+	});
+
+	d3.csv('data_sanders.csv', function(error, data2) {
+
+		data2.forEach(function(d) {
+			d.date = new Date(+d.date*1000);
+			d.mood = +d.mood;
+		});
+
+		vis.append('svg:path')
+			.attr('d', lineGen(data2))
+			.attr('stroke', 'blue')
+			.attr('stroke-width', 2)
+			.attr('fill', 'none');
+
+	});
+
+	candidates = [
+		{
+			name: 'Sanders',
+			color: 'blue'
+		},
+		{
+			name: 'Trump',
+			color: 'red'
+		},
+		{
+			name: 'Clinton',
+			color: 'green'
+		},
+		{
+			name: 'Cruz',
+			color: 'orange'
+		}
+	]
+
+	vis.append('g')
+		.attr('class', 'legend')
+		.selectAll('text')
+		.data(candidates)
+		  .enter()
+		    .append('text')
+		      .text(function(d) { return '• ' + d.name; })
+		      .attr('fill', function(d) { return d.color; })
+		      .attr('y', function(d, i) { return 20 * (i + 1); })
+		      .attr('x', MARGINS.left + 10)
+
+});
+</script>
+
+</body>
+</html>

@@ -31,37 +31,41 @@ def main():
 		data_limit = 1e8
 
 		def on_status(self, tweet):
-			
-			if hasattr(tweet, 'text'):
 
-				if hasattr(tweet, 'retweeted_status'): # twitter sends newlines sometimes to keep the connection alive
-					tweet = tweet.retweeted_status
+			try:
 				
-				lower = tweet.text.lower() # convert to lower case
-				
-				if 'sanders' in lower:
-					candidate = 'sanders'
-				elif 'clinton' in lower:
-					candidate = 'clinton'
-				elif 'trump' in lower:
-					candidate = 'trump'
-				elif 'cruz' in lower:
-					candidate = 'cruz'
-				else:
-					candidate = 'unknown'
+				if hasattr(tweet, 'text'):
 
-				fn = 'data_'+candidate+'_'+str(self.counter[candidate]).zfill(5)+'.csv'
+					if hasattr(tweet, 'retweeted_status'): # twitter sends newlines sometimes to keep the connection alive
+						tweet = tweet.retweeted_status
+					
+					lower = tweet.text.lower() # convert to lower case
+					
+					if 'sanders' in lower:
+						candidate = 'sanders'
+					elif 'clinton' in lower:
+						candidate = 'clinton'
+					elif 'trump' in lower:
+						candidate = 'trump'
+					elif 'cruz' in lower:
+						candidate = 'cruz'
+					else:
+						candidate = 'unknown'
 
-				mood = sid.polarity_scores(tweet.text)['compound']
+					fn = 'data_'+candidate+'_'+str(self.counter[candidate]).zfill(5)+'.csv'
 
-				with open(fn, 'ab') as csvfile:
-						spamwriter = csv.writer(csvfile, delimiter=' ',
-												quotechar='|', quoting=csv.QUOTE_MINIMAL)
-						spamwriter.writerow([time(), mood])
+					mood = sid.polarity_scores(tweet.text)['compound']
 
-				file_size = os.path.getsize(fn)
-				if file_size > self.data_limit:
-					self.counter[candidate] += 1
+					with open(fn, 'ab') as csvfile:
+							spamwriter = csv.writer(csvfile, delimiter=' ',
+													quotechar='|', quoting=csv.QUOTE_MINIMAL)
+							spamwriter.writerow([time(), mood])
+
+					file_size = os.path.getsize(fn)
+					if file_size > self.data_limit:
+						self.counter[candidate] += 1
+			except Exception:
+				pass
 			
 		def on_error(self, status_code):
 			print status_code
