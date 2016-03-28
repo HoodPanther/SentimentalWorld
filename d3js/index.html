@@ -59,6 +59,7 @@ d3.csv('data_cruz_downsampled.csv', function(error, data) {
 		.ticks(5);
 
 	var lineGen = d3.svg.line()
+		.defined(function(d){ return d.mood; })
 		.x(function(d) {
 		return xScale(d.date);
 		})
@@ -126,7 +127,11 @@ d3.csv('data_cruz_downsampled.csv', function(error, data) {
 
 		data2.forEach(function(d) {
 			d.date = new Date(+d.date*1000);
-			d.mood = +d.mood;
+			if (d.mood.length > 0) {
+				d.mood = +d.mood;
+			} else {
+				d.mood = null;
+			}
 		});
 
 		vis.append('svg:path')

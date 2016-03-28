@@ -36,7 +36,13 @@ def main():
 					if prev_time == 0:
 						prev_time = float(row[0])
 						continue
-					if float(row[0]) - prev_time > R:
+					time_diff = float(row[0]) - prev_time
+					if time_diff > R:
+						if int(time_diff / R) > 1:
+							with open(outfile, 'ab') as outf:
+								spamwriter = csv.writer(outf, delimiter=',',
+														quotechar='|', quoting=csv.QUOTE_MINIMAL)
+								spamwriter.writerow([float(row[0])-(time_diff*0.5), None])
 						with open(outfile, 'ab') as outf:
 							spamwriter = csv.writer(outf, delimiter=',',
 													quotechar='|', quoting=csv.QUOTE_MINIMAL)
