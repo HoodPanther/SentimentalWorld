@@ -5,7 +5,7 @@ from twitter_credentials import *
 
 def main():
 	from nltk.sentiment.vader import SentimentIntensityAnalyzer
-	from time import time
+	import time
 	import csv
 	import os
 	import tweepy
@@ -59,7 +59,7 @@ def main():
 					with open(fn, 'ab') as csvfile:
 							spamwriter = csv.writer(csvfile, delimiter=',',
 													quotechar='|', quoting=csv.QUOTE_MINIMAL)
-							spamwriter.writerow([time(), mood])
+							spamwriter.writerow([time.time(), mood])
 
 					file_size = os.path.getsize(fn)
 					if file_size > self.data_limit:
@@ -81,7 +81,8 @@ def main():
 		try:
 			myStream.filter(track=['Sanders, Clinton, Trump, Ted Cruz'], languages=['en'])
 		except httplib.IncompleteRead, e:
+			myStream.disconnect()
 			print e
-			pass
+			time.sleep(1)
 
 if __name__ == '__main__': main()
