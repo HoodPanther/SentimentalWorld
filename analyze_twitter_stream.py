@@ -9,6 +9,7 @@ def main():
 	import csv
 	import os
 	import tweepy
+	import sys
 
 	sid = SentimentIntensityAnalyzer()
 
