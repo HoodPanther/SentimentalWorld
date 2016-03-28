@@ -79,7 +79,10 @@ def main():
 			myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 			myStream.timeout = 60*60 # one hour
 			myStream.filter(track=['Sanders, Clinton, Trump, Ted Cruz'], languages=['en'])
-		except IncompleteRead, e:
-			print e
+		except KeyboardInterrupt:
+			break
+		except:
+			print "Unexpected error:", sys.exc_info()[0]
+			continue
 
 if __name__ == '__main__': main()
