@@ -73,16 +73,13 @@ def main():
 				#returning False in on_data disconnects the stream
 				return False
 
-	myStreamListener = MyStreamListener()
-	myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
-	myStream.timeout = 60*60 # one hour
-
 	while 1:
 		try:
+			myStreamListener = MyStreamListener()
+			myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
+			myStream.timeout = 60*60 # one hour
 			myStream.filter(track=['Sanders, Clinton, Trump, Ted Cruz'], languages=['en'])
-		except httplib.IncompleteRead, e:
-			myStream.disconnect()
+		except IncompleteRead, e:
 			print e
-			time.sleep(1)
 
 if __name__ == '__main__': main()
