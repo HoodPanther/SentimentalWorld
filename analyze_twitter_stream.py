@@ -80,7 +80,8 @@ def main():
 	while 1:
 		try:
 			myStream.filter(track=['Sanders, Clinton, Trump, Ted Cruz'], languages=['en'])
-		except httplib.IncompleteRead:
+		except httplib.IncompleteRead, e:
+			print e
 			pass
 
 if __name__ == '__main__': main()
