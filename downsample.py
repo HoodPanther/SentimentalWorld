@@ -40,19 +40,20 @@ def main():
 						prev_time = float(row[0])
 						continue
 					time_diff = float(row[0]) - prev_time
-					if time_diff > R and tweets > min_tweets:
-						if int(time_diff / R) > 1:
-							with open(outfile, 'ab') as outf:
-								spamwriter = csv.writer(outf, delimiter=',',
-														quotechar='|', quoting=csv.QUOTE_MINIMAL)
-								spamwriter.writerow([float(row[0])-(time_diff*0.5), None, 0])
+					if int(time_diff / R) > 1:
+						with open(outfile, 'ab') as outf:
+							spamwriter = csv.writer(outf, delimiter=',',
+													quotechar='|', quoting=csv.QUOTE_MINIMAL)
+							spamwriter.writerow([float(row[0])-(time_diff*0.5), None, 0])
+						tweets = 0
+					elif time_diff > R and tweets > min_tweets:
 						with open(outfile, 'ab') as outf:
 							spamwriter = csv.writer(outf, delimiter=',',
 													quotechar='|', quoting=csv.QUOTE_MINIMAL)
 							spamwriter.writerow([float(row[0])-60, np.mean(mood), tweets])
-						mood = []
-						prev_time = float(row[0])
-						tweets = 0
+					mood = []
+					prev_time = float(row[0])
+					tweets = 0
 			f.close()
 	R = 10 * 60 # run every 10 minutes
 
