@@ -9,7 +9,7 @@ def main():
 	import csv
 	import os
 	import tweepy
-	import sys
+	import sys, traceback
 
 	sid = SentimentIntensityAnalyzer()
 
@@ -78,12 +78,17 @@ def main():
 		try:
 			myStreamListener = MyStreamListener()
 			myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
-			myStream.timeout = 60*60 # one hour
+			myStream.timeout = 60*2 # two minutes
 			myStream.filter(track=['Sanders, Clinton, Trump, Ted Cruz'], languages=['en'])
 		except KeyboardInterrupt:
 			break
 		except:
-			print "Unexpected error:", sys.exc_info()[0]
+			print time.time()
+			print "Unexpected error:"
+#			exc_type, exc_value, exc_traceback = sys.exc_info()
+#			traceback.print_exc()
+#			print
+#			time.sleep(1)
 			continue
 
 if __name__ == '__main__': main()
