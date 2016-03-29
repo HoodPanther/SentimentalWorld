@@ -9,7 +9,7 @@ def main():
 		with open(outfile, 'wb') as f:
 			spamwriter = csv.writer(f, delimiter=',',
 									quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			spamwriter.writerow(['date','mood'])
+			spamwriter.writerow(['date','mood','tweets'])
 		for fn in files:
 			prev_time = 0
 			mood = []
@@ -22,6 +22,8 @@ def main():
 			f.seek(0,2)
 			lastline = f.tell()
 			f.seek(0)
+			tweets = 0
+			min_tweets = 100
 			while f.tell() < lastline:
 				where = f.tell()
 				line = f.readline()
@@ -29,6 +31,7 @@ def main():
 					time.sleep(0.1)
 					f.seek(where)
 				else:
+					tweets += 1
 					a = StringIO.StringIO(line)
 					reader = csv.reader(a, delimiter=',')
 					row = list(reader)[0]
@@ -37,16 +40,16 @@ def main():
 						prev_time = float(row[0])
 						continue
 					time_diff = float(row[0]) - prev_time
-					if time_diff > R:
+					if time_diff > R and tweets > min_tweets:
 						if int(time_diff / R) > 1:
 							with open(outfile, 'ab') as outf:
 								spamwriter = csv.writer(outf, delimiter=',',
 														quotechar='|', quoting=csv.QUOTE_MINIMAL)
-								spamwriter.writerow([float(row[0])-(time_diff*0.5), None])
+								spamwriter.writerow([float(row[0])-(time_diff*0.5), None, 0])
 						with open(outfile, 'ab') as outf:
 							spamwriter = csv.writer(outf, delimiter=',',
 													quotechar='|', quoting=csv.QUOTE_MINIMAL)
-							spamwriter.writerow([float(row[0])-60, np.mean(mood)])
+							spamwriter.writerow([float(row[0])-60, np.mean(mood), tweets])
 						mood = []
 						prev_time = float(row[0])
 			f.close()

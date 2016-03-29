@@ -34,7 +34,12 @@ d3.csv('data_cruz_downsampled.csv', function(error, data) {
 
 	data.forEach(function(d) {
 		d.date = new Date(+d.date*1000);
-		d.mood = +d.mood;
+		if (d.mood.length > 0) {
+			d.mood = +d.mood;
+		} else {
+			d.mood = null;
+		}
+		d.tweets = +d.tweets
 	});
 
 	var xScale = d3.time.scale()
@@ -97,7 +102,11 @@ d3.csv('data_cruz_downsampled.csv', function(error, data) {
 
 		data2.forEach(function(d) {
 			d.date = new Date(+d.date*1000);
-			d.mood = +d.mood;
+			if (d.mood.length > 0) {
+				d.mood = +d.mood;
+			} else {
+				d.mood = null;
+			}
 		});
 
 		vis.append('svg:path')
@@ -112,7 +121,12 @@ d3.csv('data_cruz_downsampled.csv', function(error, data) {
 
 		data2.forEach(function(d) {
 			d.date = new Date(+d.date*1000);
-			d.mood = +d.mood;
+			if (d.mood.length > 0) {
+				d.mood = +d.mood;
+			} else {
+				d.mood = null;
+			}
+		d.tweets = +d.tweets
 		});
 
 		vis.append('svg:path')
@@ -132,6 +146,7 @@ d3.csv('data_cruz_downsampled.csv', function(error, data) {
 			} else {
 				d.mood = null;
 			}
+			d.tweets = +d.tweets
 		});
 
 		vis.append('svg:path')
