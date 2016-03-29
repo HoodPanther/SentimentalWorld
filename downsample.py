@@ -52,6 +52,7 @@ def main():
 							spamwriter.writerow([float(row[0])-60, np.mean(mood), tweets])
 						mood = []
 						prev_time = float(row[0])
+						tweets = 0
 			f.close()
 	R = 10 * 60 # run every 10 minutes
 
