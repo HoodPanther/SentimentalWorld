@@ -59,7 +59,7 @@ def main():
 					with open(fn, 'ab') as csvfile:
 							spamwriter = csv.writer(csvfile, delimiter=',',
 													quotechar='|', quoting=csv.QUOTE_MINIMAL)
-							spamwriter.writerow([time.time(), mood])
+							spamwriter.writerow([time.time(), mood, tweet.id_str])
 
 					file_size = os.path.getsize(fn)
 					if file_size > self.data_limit:
@@ -90,7 +90,7 @@ def main():
 		except Exception, ex:
 			err =  "'%s' Error '%s' '%s'"%(str(datetime.now()), str(ex), get_trace())
 			print err
-			file('errors.txt','a').write(err+'\n')
+			file('errors.log','a').write(err+'\n')
 			print 'Connected: '+str(myStream.running)
 			continue
 
