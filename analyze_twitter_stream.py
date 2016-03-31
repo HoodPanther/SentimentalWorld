@@ -10,13 +10,12 @@ def main():
 	import os
 	import tweepy
 	import sys, traceback
+	from datetime import datetime
+
+	def get_trace():
+		return ''.join(traceback.format_exception(*sys.exc_info()))
 
 	sid = SentimentIntensityAnalyzer()
-
-	auth = tweepy.OAuthHandler(twitter_credentials['API key'], twitter_credentials['API secret'])
-	auth.set_access_token(twitter_credentials['token'], twitter_credentials['token secret'])
-
-	api = tweepy.API(auth)
 
 	#override tweepy.StreamListener to add logic to on_status
 	class MyStreamListener(tweepy.StreamListener):
@@ -29,7 +28,7 @@ def main():
 			'cruz': 0,
 			'unknown': 0
 		}
-		data_limit = 1e8
+		data_limit = 1e9
 
 		def on_status(self, tweet):
 
@@ -76,19 +75,23 @@ def main():
 
 	while 1:
 		try:
+
+			auth = tweepy.OAuthHandler(twitter_credentials['API key'], twitter_credentials['API secret'])
+			auth.set_access_token(twitter_credentials['token'], twitter_credentials['token secret'])
+
+			api = tweepy.API(auth)
 			myStreamListener = MyStreamListener()
 			myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 			myStream.timeout = 60*2 # two minutes
-			myStream.filter(track=['Sanders, Clinton, Trump, Ted Cruz'], languages=['en'])
+			myStream.filter(track=['Sanders, Clinton, Trump, Ted Cruz'], languages=['en'], stall_warnings=True)
 		except KeyboardInterrupt:
+			print myStream.running
 			break
-		except:
-			print time.time()
-			print "Unexpected error:"
-#			exc_type, exc_value, exc_traceback = sys.exc_info()
-#			traceback.print_exc()
-#			print
-#			time.sleep(1)
+		except Exception, ex:
+			err =  "'%s' Error '%s' '%s'"%(str(datetime.now()), str(ex), get_trace())
+			print err
+			file('errors.txt','a').write(err+'\n')
+			print 'Connected: '+str(myStream.running)
 			continue
 
 if __name__ == '__main__': main()
