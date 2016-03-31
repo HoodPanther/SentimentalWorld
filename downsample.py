@@ -50,7 +50,7 @@ def main():
 							with open(outfile, 'ab') as outf:
 								spamwriter = csv.writer(outf, delimiter=',',
 														quotechar='|', quoting=csv.QUOTE_MINIMAL)
-								spamwriter.writerow([float(row[0])-R, np.mean(mood), tweets])
+								spamwriter.writerow([float(row[0])-(R*0.5), np.mean(mood), tweets])
 						mood = []
 						prev_time = float(row[0])
 						tweets = 0
