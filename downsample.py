@@ -77,7 +77,7 @@ def main():
 						# 	# 							quotechar='|', quoting=csv.QUOTE_MINIMAL)
 						# 	# 	spamwriter.writerow([float(row[0])-(time_diff*0.5), None, tweets])
 						if time_diff > R and tweets > min_tweets:
-							output = [float(row[0])-(time_diff*0.5), np.mean(mood), tweets]
+							output = [float(row[0])-(R*0.5), np.mean(mood), tweets]
 							check(output, o)
 							# with open(outfile, 'ab') as outf:
 							# 	spamwriter = csv.writer(outf, delimiter=',',
