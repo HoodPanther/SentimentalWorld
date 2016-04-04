@@ -14,6 +14,7 @@ def main():
 			return str(si.getvalue())
 
 		def check(output, o):
+			output = [str(x) for x in output]
 			rewind = o.tell()
 			outline = o.readline()
 			if not outline:
@@ -22,7 +23,6 @@ def main():
 				print str(o.tell())+' new line added'
 			else:
 				outrow = list(csv.reader(StringIO.StringIO(outline), delimiter=','))[0]
-				outrow = [float(r) for r in outrow]
 				if not outrow == output:
 					o.seek(rewind)
 					o.write(csv_string(output))
