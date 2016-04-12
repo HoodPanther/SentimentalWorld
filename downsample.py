@@ -89,7 +89,7 @@ def main():
 			o.close()
 			f.close()
 
-	R = 10 * 60 # run every 10 minutes
+	R = 60 * 30 # run every 30 minutes
 
 	s = sched.scheduler(time.time, time.sleep)
 	def do_something(sc):
