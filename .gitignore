@@ -66,6 +66,7 @@ twitter_credentials.py
 
 # data
 *.csv
+*.json
 
 # misc
 .DS_store
