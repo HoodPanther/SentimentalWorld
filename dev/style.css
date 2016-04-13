@@ -1,0 +1,137 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto:700,400,300,100|Roboto+Slab);
+
+/* ==========================================================================
+	 Basics
+	 ========================================================================== */
+
+html, body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+html {
+	background-color: white;
+	color: #000;
+	font-size: 1em;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	line-height: 1.8em;
+}
+
+main {
+	display: block; /* neccessary for IE 9/10/11 to properly display the main element */
+}
+
+h1, h2 {
+	margin: 0;
+	margin-top: .5em;
+	margin-bottom: .5em;
+	text-align: center;
+	font-weight: 300;
+}
+
+h2 {
+	color: gray;
+	font-size: 1.2em;
+}
+
+a {
+  color: #cd6400;
+  text-decoration: none;
+}
+main a:hover {
+  text-decoration: underline;
+}
+
+.github {
+	padding: 1em;
+	float: right;
+}
+.github:before {
+	content: "";
+	position: relative;
+	display: inline-block;
+	background-image: url('../images/github-mark.svg');
+	background-repeat: no-repeat;
+	background-size: 16px 16px;
+	width: 16px;
+	height: 16px;
+	margin-right: 6px;
+	margin-bottom: -2px;
+}
+
+/* ==========================================================================
+	 D3.js figures
+	 ========================================================================== */
+
+.axis path {
+	fill: none;
+	stroke: #777;
+	shape-rendering: crispEdges;
+}
+.axis text {
+	font-family: Lato;
+	font-size: 13px;
+}
+
+svg {
+	display: block;
+}
+
+.plotcontainer {
+	display: inline-block;
+	width: 100%;
+	margin: 0;
+	margin-top: 1em;
+	padding: 0;
+}
+.plotcontainer * {
+	box-sizing: border-box;
+}
+#yAxis {
+	float: left;
+	width: 50px;
+	overflow: visible;
+}
+#plot {
+	float: right;
+	width: calc(100% - 50px);
+	margin-left: -50px;
+	overflow-x: scroll;
+}
+#plot #tweetsPerSecond {
+	overflow: visible;
+}
+
+.viralTweetCircle {
+	cursor: pointer;
+}
+#viralTWeet {
+	position: absolute;
+	transform: translateY(-50%);
+	cursor: default;
+}
+
+#legend {
+	width: 100%;
+	text-align: center;
+	margin-bottom: 1em;
+}
+#legend .label {
+	padding-left: .2em;
+	padding-right: .2em;
+	white-space: nowrap;
+}
+#legend .Sanders {
+	color: blue;
+}
+#legend .Trump {
+	color: red;
+}
+#legend .Clinton {
+	color: green;
+}
+#legend .Cruz {
+	color: orange;
+}

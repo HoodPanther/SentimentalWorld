@@ -1,0 +1,566 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>How Twitter feels about the presidential candidates</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name='author' content="Jeroen Delcour">
+	<link rel="stylesheet" href="style.css">
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		ga('create', 'UA-22518982-6', 'auto');
+		ga('send', 'pageview');
+	</script>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script>
+	window.twttr = (function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0],
+		t = window.twttr || {};
+	  if (d.getElementById(id)) return t;
+	  js = d.createElement(s);
+	  js.id = id;
+	  js.src = "https://platform.twitter.com/widgets.js";
+	  fjs.parentNode.insertBefore(js, fjs);
+	 
+	  t._e = [];
+	  t.ready = function(f) {
+		t._e.push(f);
+	  };
+	 
+	  return t;
+	}(document, "script", "twitter-wjs"));
+	</script>
+</head>
+<body>
+
+<main>
+
+<h1>How Twitter feels about the 2016 USA presidential candidates</h1>
+<h2>Live sentiment analysis on the public Twitter stream (updates every 30 minutes)</h2>
+
+<figure class="plotContainer">
+	<div id="legend">
+		<span class="label Sanders">• Sanders</span>
+		<span class="label Trump">• Trump</span>
+		<span class="label Clinton">• Clinton</span>
+		<span class="label Cruz">• Cruz</span>
+	</div>
+	<svg id="yAxis">
+	<div id="plot">
+		</svg>
+		<svg id="sentiment" width="1000" height="300">
+			<g id="viralSanders"></g>
+			<g id="viralTrump"></g>
+			<g id="viralClinton"></g>
+			<g id="viralCruz"></g>
+		</svg>
+		<svg id="tweetsPerSecond" width="1000" height="150"></svg>
+	</div>
+	</svg>
+</figure>
+
+<a href="https://github.com/JeroenDelcour/SentimentalWorld" target="_blank" class="github">source</a>
+
+</main>
+
+<script>
+
+function closest(el, fn) {
+	while (el) {
+		if (fn(el)) return el; 
+		el = el.parentNode;
+	}
+	return false;
+}
+
+function toggleViralTweetEl(event) {
+	var viralTweetEl = closest(event.target, function (el) {
+		return el.id === 'viralTweet' || event.target.getAttribute("class") === 'viralTweetCircle';
+	});
+	if (!viralTweetEl) {
+		d3.select("#viralTweet")
+			.style("display", "none")
+			.html('');
+		document.removeEventListener("click", toggleViralTweetEl);
+	};
+}
+
+d3.csv('data_cruz_downsampled.csv', function(error, data) {
+
+	data.forEach(function(d) {
+		d.date = new Date(+d.date*1000);
+		if (d.mood.length > 0) {
+			d.mood = +d.mood;
+		} else {
+			d.mood = null;
+		}
+		d.tweets = +d.tweets
+	});
+
+	pixelsPerDatapoint = 4
+	viewLengthPixels = pixelsPerDatapoint * data.length;
+
+	var WIDTH = viewLengthPixels,
+		HEIGHT = 300,
+		MARGINS = {
+			top: 20,
+			right: 20,
+			bottom: 20,
+			left: 50
+		}
+
+	var vis = d3.select("#sentiment")
+	var tps = d3.select("#tweetsPerSecond")
+	var yAxisEl = d3.select('#yAxis');
+
+	var plot = document.getElementById("sentiment");
+	plot.setAttribute("width", viewLengthPixels);
+	document.getElementById("tweetsPerSecond").setAttribute("width", viewLengthPixels);
+
+	document.getElementById("plot").scrollLeft = viewLengthPixels;
+
+	var xScale = d3.time.scale()
+		.domain([
+		  data[0].date,
+		  new Date()
+		])
+		.range([0, WIDTH - MARGINS.right]);
+
+	var yScale = d3.scale.linear()
+		.domain([-0.5, 0.5])
+		.range([HEIGHT - MARGINS.top, 0]); // Seems backwards because SVG is y-down
+
+	var yScaleTps = d3.scale.linear()
+		.domain([0, 10])
+		.range([150 - MARGINS.bottom, 0])
+
+	var xAxis = d3.svg.axis()
+		.scale(xScale)         // x is the d3.time.scale()
+		.orient('top') // the ticks go above the graph
+		.ticks(viewLengthPixels / 100);        // specify the number of ticks
+
+	var yAxis = d3.svg.axis()
+		.scale(yScale)
+		.orient('left')
+		.ticks(5);
+
+	var yAxisTps = d3.svg.axis()
+		.scale(yScaleTps)
+		.orient('left')
+		.ticks(5)
+
+	var lineGen = d3.svg.line()
+		.defined(function(d){ return d.mood; })
+		.x(function(d) {
+			return xScale(d.date);
+		})
+		.y(function(d) {
+			return yScale(d.mood);
+		})
+		.interpolate("basis");
+
+	var lineGenTps = d3.svg.line()
+		.defined(function(d){ return d.mood; })
+		.x(function(d) {
+			return xScale(d.date);
+		})
+		.y(function(d) {
+			return yScaleTps(d.tweets / 60 / 30);
+		})
+		.interpolate("basis");
+
+	vis.append('line')
+		.attr({ x1: 0, y1: yScale(0), x2: viewLengthPixels, y2: yScale(0) })
+		.style("stroke-dasharray", ("5, 5"))
+		.style("stroke", "#CCC");
+
+	vis.append('g')            // create a <g> element
+		.attr("class","axis")
+		.attr("transform", "translate(0," + (MARGINS.top) + ")")
+		.call(xAxis);            // let the axis do its thing
+
+	yAxisEl.append('g')            // create a <g> element
+		.attr("class","axis")
+		.attr("transform", "translate(" + (MARGINS.left) + ",0)")
+		.call(yAxis);            // let the axis do its thing
+
+	yAxisEl.append("text")
+		.attr("class", "y label")
+		.attr("text-anchor", "middle")
+		.attr("y", MARGINS.left - 45)
+		.attr("x", -HEIGHT/2)
+		.attr("dy", ".75em")
+		.attr("transform", "rotate(-90)")
+		.text("Sentiment");
+
+	yAxisEl.append('g')
+		.attr("class","axis")
+		.attr("transform", "translate(" + (MARGINS.left) + "," + (HEIGHT) + ")")
+		.call(yAxisTps);
+
+	yAxisEl.append("text")
+		.attr("class", "y label")
+		.attr("text-anchor", "middle")
+		.attr("y", MARGINS.left - 45)
+		.attr("x", -HEIGHT - (150/2))
+		.attr("dy", ".75em")
+		.attr("transform", "rotate(-90)")
+		.text("Tweets per second");
+
+	vis.append('svg:path')
+		.attr('d', lineGen(data))
+		.attr('stroke', 'orange')
+		.attr('stroke-width', 1)
+		.attr('fill', 'none');
+
+	tps.append('svg:path')
+		.attr('d', lineGenTps(data))
+		.attr('stroke', 'orange')
+		.attr('stroke-width', 1)
+		.attr('fill', 'none')
+		.style("stroke-dasharray", ("1, 1"));
+
+	d3.csv('data_clinton_downsampled.csv', function(error, data2) {
+
+		data2.forEach(function(d) {
+			d.date = new Date(+d.date*1000);
+			if (d.mood.length > 0) {
+				d.mood = +d.mood;
+			} else {
+				d.mood = null;
+			}
+		});
+
+		vis.append('svg:path')
+			.attr('d', lineGen(data2))
+			.attr('stroke', 'green')
+			.attr('stroke-width', 1)
+			.attr('fill', 'none');
+
+		tps.append('svg:path')
+			.attr('d', lineGenTps(data2))
+			.attr('stroke', 'green')
+			.attr('stroke-width', 1)
+			.attr('fill', 'none')
+			.style("stroke-dasharray", ("1, 1"));
+
+	});
+
+	d3.csv('data_trump_downsampled.csv', function(error, data2) {
+
+		data2.forEach(function(d) {
+			d.date = new Date(+d.date*1000);
+			if (d.mood.length > 0) {
+				d.mood = +d.mood;
+			} else {
+				d.mood = null;
+			}
+		d.tweets = +d.tweets
+		});
+
+		vis.append('svg:path')
+			.attr('d', lineGen(data2))
+			.attr('stroke', 'red')
+			.attr('stroke-width', 1)
+			.attr('fill', 'none');
+
+		tps.append('svg:path')
+			.attr('d', lineGenTps(data2))
+			.attr('stroke', 'red')
+			.attr('stroke-width', 1)
+			.attr('fill', 'none')
+			.style("stroke-dasharray", ("1, 1"));
+
+	});
+
+	d3.csv('data_sanders_downsampled.csv', function(error, data2) {
+
+		data2.forEach(function(d) {
+			d.date = new Date(+d.date*1000);
+			if (d.mood.length > 0) {
+				d.mood = +d.mood;
+			} else {
+				d.mood = null;
+			}
+			d.tweets = +d.tweets
+		});
+
+		vis.append('svg:path')
+			.attr('d', lineGen(data2))
+			.attr('stroke', 'blue')
+			.attr('stroke-width', 1)
+			.attr('fill', 'none');
+
+		tps.append('svg:path')
+			.attr('d', lineGenTps(data2))
+			.attr('stroke', 'blue')
+			.attr('stroke-width', 1)
+			.attr('fill', 'none')
+			.style("stroke-dasharray", ("1, 1"));
+
+	});
+
+	var viraltweets = {
+		"sanders": [
+			{
+				"tweetID": "715731926519255041", 
+				"datetime": 1459478665.855
+			}, 
+			{
+				"tweetID": "715913147153047553", 
+				"datetime": 1459523690.3150001
+			}, 
+			{
+				"tweetID": "716270238715645953", 
+				"datetime": 1459642738.655
+			}, 
+			{
+				"tweetID": "717523412692910080", 
+				"datetime": 1459905703.5050001
+			}, 
+			{
+				"tweetID": "717893134064230400", 
+				"datetime": 1459993933.3050001
+			}, 
+			{
+				"tweetID": "718127026549424128", 
+				"datetime": 1460051362.345
+			}, 
+			{
+				"tweetID": "718408301793447936", 
+				"datetime": 1460118111.47
+			}, 
+			{
+				"tweetID": "718761006068051968", 
+				"datetime": 1460201843.3050001
+			}, 
+			{
+				"tweetID": "718901290965856260", 
+				"datetime": 1460235151.21
+			}, 
+			{
+				"tweetID": "719292920608788480", 
+				"datetime": 1460451780.1999998
+			}
+		], 
+		"cruz": [
+			{
+				"tweetID": "716386946445082624", 
+				"datetime": 1459635554.5599999
+			}, 
+			{
+				"tweetID": "716768935178272769", 
+				"datetime": 1459726922.7249999
+			}, 
+			{
+				"tweetID": "717522934567460865", 
+				"datetime": 1459905543.8600001
+			}, 
+			{
+				"tweetID": "716468263274749952", 
+				"datetime": 1459923552.8299999
+			}, 
+			{
+				"tweetID": "715372384774017024", 
+				"datetime": 1460188433.8800001
+			}, 
+			{
+				"tweetID": "718771938005540864", 
+				"datetime": 1460203767.7199998
+			}, 
+			{
+				"tweetID": "719087817981165568", 
+				"datetime": 1460279628.825
+			}
+		], 
+		"clinton": [
+			{
+				"tweetID": "716294045039874050", 
+				"datetime": 1459612130.5700002
+			}, 
+			{
+				"tweetID": "717516334159040512", 
+				"datetime": 1459904627.73
+			}, 
+			{
+				"tweetID": "717496335742672896", 
+				"datetime": 1459940657.4850001
+			}, 
+			{
+				"tweetID": "718088969330814976", 
+				"datetime": 1460042362.7449999
+			}, 
+			{
+				"tweetID": "718144495657861120", 
+				"datetime": 1460061269.105
+			}, 
+			{
+				"tweetID": "718742759037931520", 
+				"datetime": 1460197347.0
+			}, 
+			{
+				"tweetID": "718515978980593664", 
+				"datetime": 1460227956.6950002
+			}, 
+			{
+				"tweetID": "719152144016936961", 
+				"datetime": 1460294857.4449999
+			}
+		], 
+		"trump": [
+			{
+				"tweetID": "716326494423764992", 
+				"datetime": 1459620203.1300001
+			}, 
+			{
+				"tweetID": "712031924789841926", 
+				"datetime": 1459699498.405
+			}, 
+			{
+				"tweetID": "717040182197952512", 
+				"datetime": 1459919118.9000001
+			}, 
+			{
+				"tweetID": "717837683972829184", 
+				"datetime": 1459982227.25
+			}, 
+			{
+				"tweetID": "718189404435537920", 
+				"datetime": 1460172112.335
+			}, 
+			{
+				"tweetID": "718766507199766528", 
+				"datetime": 1460203619.73
+			}, 
+			{
+				"tweetID": "717622580635537408", 
+				"datetime": 1460283138.0250001
+			}, 
+			{
+				"tweetID": "719229013370089472", 
+				"datetime": 1460318241.1199999
+			}, 
+			{
+				"tweetID": "719439165880999936", 
+				"datetime": 1460365340.1950002
+			}, 
+			{
+				"tweetID": "718189404435537920", 
+				"datetime": 1460440045.5550001
+			}, 
+			{
+				"tweetID": "720054126634274817", 
+				"datetime": 1460512051.5350001
+			}, 
+			{
+				"tweetID": "719710960689106944", 
+				"datetime": 1460529152.615
+			}
+		]
+	}
+
+	viraltweets.sanders.forEach(function(d) {
+		d.datetime = new Date(+d.datetime*1000);
+	});
+	viraltweets.trump.forEach(function(d) {
+		d.datetime = new Date(+d.datetime*1000);
+	});
+	viraltweets.clinton.forEach(function(d) {
+		d.datetime = new Date(+d.datetime*1000);
+	});
+	viraltweets.cruz.forEach(function(d) {
+		d.datetime = new Date(+d.datetime*1000);
+	});
+
+	var tweet = d3.select("body").append("div")
+		.attr("id", "viralTweet")
+		.style("display", "none");
+
+	function drawViralTweets(s, data, color, lightColor, cy) {
+		s.selectAll("circle").data(data).enter()
+			.append("svg:circle")
+			.attr("class", "viralTweetCircle")
+			.attr("r", 5)
+			.attr("cx", function(d) { return xScale(d.datetime); })
+			.attr("cy", cy)
+			.attr("fill", color)
+			.attr("stroke", lightColor)
+			.attr("stroke-width", 2)
+			.on("mouseover", function(d) {
+				d3.select(this).transition()
+					.duration(200)
+					.style("stroke-width", 6)
+					.attr("r", 7);
+			})
+			.on("mousedown", function(d) {
+				tweet.html('')
+					.style("display", "block")
+					.style("left", d3.event.pageX + "px")
+					.style("top", d3.event.pageY + "px");
+				var left = tweet.node().getBoundingClientRect().x;
+				if (left + 500 > window.innerWidth) {
+					tweet.style("left", left - ( (left + 500) - window.innerWidth) - 1 + "px");
+				}
+				twttr.widgets.createTweet(
+				  d.tweetID,
+				  document.getElementById('viralTweet'),
+				  {
+					theme: 'light',
+					width: 350
+				  }
+				).then(function(el) {
+					document.addEventListener("click", toggleViralTweetEl);
+					if (el.parentNode.offsetLeft + el.parentNode.offsetWidth > window.innerWidth) {
+						el.parentNode.style.left = el.parentNode.offsetLeft - ( (el.parentNode.offsetLeft + el.parentNode.offsetWidth) - window.innerWidth) - 1 + "px";
+					};
+				});
+			})
+			.on("mouseout", function(d) {
+				d3.select(this).transition()
+					.duration(200)
+					.style("stroke-width", 2)
+					.attr("r", 5);
+			});
+	}
+
+	drawViralTweets(d3.select("#viralSanders"), viraltweets.sanders, "blue", "lightblue", HEIGHT - 65);
+	drawViralTweets(d3.select("#viralTrump"), viraltweets.trump, "red", "pink", HEIGHT - 50);
+	drawViralTweets(d3.select("#viralClinton"), viraltweets.clinton, "green", "lightgreen", HEIGHT - 35);
+	drawViralTweets(d3.select("#viralCruz"), viraltweets.cruz, "orange", "#ffe42b", HEIGHT - 20);
+
+	// d3.select("#viralTrump").selectAll("circle").data(viraltweets.trump).enter()
+	// 	.append("svg:circle")
+	// 	.attr("r", 5)
+	// 	.attr("cx", function(d) { return xScale(d.datetime); })
+	// 	.attr("cy", HEIGHT - 50)
+	// 	.attr("fill", "red")
+	// 	.attr("stroke", "pink")
+	// 	.attr("stroke-width", 2);
+	// d3.select("#viralClinton").selectAll("circle").data(viraltweets.clinton).enter()
+	// 	.append("svg:circle")
+	// 	.attr("r", 5)
+	// 	.attr("cx", function(d) { return xScale(d.datetime); })
+	// 	.attr("cy", HEIGHT - 35)
+	// 	.attr("fill", "green")
+	// 	.attr("stroke", "lightgreen")
+	// 	.attr("stroke-width", 2);
+	// d3.select("#viralCruz").selectAll("circle").data(viraltweets.cruz).enter()
+	// 	.append("svg:circle")
+	// 	.attr("r", 5)
+	// 	.attr("cx", function(d) { return xScale(d.datetime); })
+	// 	.attr("cy", HEIGHT - 20)
+	// 	.attr("fill", "orange")
+	// 	.attr("stroke", "#ffe42b")
+	// 	.attr("stroke-width", 2);
+
+});
+
+var refreshTimer = setInterval(function(){
+	location.reload();
+}, 1000 * 60 * 30); // refresh every 30 minutes
+</script>
+
+</body>
+</html>
