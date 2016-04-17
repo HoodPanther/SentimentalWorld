@@ -1,19 +1,37 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
 from twitter_credentials import *
 
 def main():
 	from nltk.sentiment.vader import SentimentIntensityAnalyzer
-	import time
-	import csv
-	import os
-	import tweepy
-	import sys, traceback
+	import time,os,tweepy,sys,traceback
+	# import csv
+	import sqlite3
 	from datetime import datetime
 
 	def get_trace():
 		return ''.join(traceback.format_exception(*sys.exc_info()))
+
+	# def save_tweet_csv(fn, datetime, sentiment, tweetID):
+	# 	with open(fn, 'ab') as csvfile:
+	# 		spamwriter = csv.writer(csvfile, delimiter=',',
+	# 								quotechar='|', quoting=csv.QUOTE_MINIMAL)
+	# 		spamwriter.writerow([datetime, sentiment, tweetID])
+
+	def save_tweet_db(candidate, datetime, sentiment, tweetID):
+		try:
+			conn = sqlite3.connect('data.sqlite')
+			c = conn.cursor()
+			c.execute('PRAGMA journal_mode=wal')
+			c.execute('''INSERT INTO '''+candidate+'''(datetime, sentiment, tweetID) VALUES (?, ?, ?)''', (datetime, sentiment, tweetID))
+			conn.commit()
+			conn.close()
+		except Exception, ex:
+			err =  "'%s' Error '%s' '%s'"%(str(datetime.now()), str(ex), get_trace())
+			print err
+			file('errors.log','a').write(err+'\n')
 
 	sid = SentimentIntensityAnalyzer()
 
@@ -52,18 +70,22 @@ def main():
 					else:
 						candidate = 'unknown'
 
-					fn = 'data_'+candidate+'_'+str(self.counter[candidate]).zfill(5)+'.csv'
+					sentiment = sid.polarity_scores(tweet.text)['compound']
 
-					mood = sid.polarity_scores(tweet.text)['compound']
+					save_tweet_db(candidate, time.time(), sentiment, tweet.id_str)
 
-					with open(fn, 'ab') as csvfile:
-							spamwriter = csv.writer(csvfile, delimiter=',',
-													quotechar='|', quoting=csv.QUOTE_MINIMAL)
-							spamwriter.writerow([time.time(), mood, tweet.id_str])
+					# fn = 'data_'+candidate+'_'+str(self.counter[candidate]).zfill(5)+'.csv'
 
-					file_size = os.path.getsize(fn)
-					if file_size > self.data_limit:
-						self.counter[candidate] += 1
+					# with open(fn, 'ab') as csvfile:
+					# 		spamwriter = csv.writer(csvfile, delimiter=',',
+					# 								quotechar='|', quoting=csv.QUOTE_MINIMAL)
+					# 		spamwriter.writerow([time.time(), mood, tweet.id_str])
+
+					# save_tweet_csv(fn, time.time(), sentiment, tweet.id_str)
+
+					# file_size = os.path.getsize(fn)
+					# if file_size > self.data_limit:
+					# 	self.counter[candidate] += 1
 			except Exception:
 				pass
 			
