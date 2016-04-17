@@ -251,9 +251,13 @@ def main():
 
 	s = sched.scheduler(time.time, time.sleep)
 	def do_things(sc):
-		
+
+		print 'Downsampling...'
 		downsample()
+		print 'Done.'
+		print 'Getting viral tweets...'
 		get_viral_tweets()
+		print 'Done.'
 
 		sc.enter(R, 1, do_things, (sc,))
 
