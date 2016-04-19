@@ -41,7 +41,11 @@
 <h2>Live sentiment analysis on the public Twitter stream (updates every 30 minutes)</h2>
 
 <figure class="plotContainer">
-	<div id="means" width="300" height="100">
+	<div id="legend">
+		<span class="label Sanders">• Sanders</span>
+		<span class="label Trump">• Trump</span>
+		<span class="label Clinton">• Clinton</span>
+		<span class="label Cruz">• Cruz</span>
 	</div>
 	<svg id="yAxis">
 	<div id="plot">
@@ -66,30 +70,30 @@
 function loadJSON(url, callback){
 	var http_request = new XMLHttpRequest();
 	try{
-		// Opera 8.0+, Firefox, Chrome, Safari
-		http_request = new XMLHttpRequest();
+	    // Opera 8.0+, Firefox, Chrome, Safari
+	    http_request = new XMLHttpRequest();
 	}catch (e){
-		// Internet Explorer Browsers
-		try{
-			http_request = new ActiveXObject("Msxml2.XMLHTTP");
+	    // Internet Explorer Browsers
+	    try{
+		    http_request = new ActiveXObject("Msxml2.XMLHTTP");
 			
-		}catch (e) {
+	    }catch (e) {
 		
-			try{
-				http_request = new ActiveXObject("Microsoft.XMLHTTP");
-			}catch (e){
+		    try{
+			    http_request = new ActiveXObject("Microsoft.XMLHTTP");
+		    }catch (e){
 				console.log("ERROR: AJAX request failed.");
 				return false;
-			}
+		  	}
 	   }
 	}
 
 	http_request.onreadystatechange = function(){
 
-		if (http_request.readyState == 4  ){
-			var jsonObj = JSON.parse(http_request.responseText);
-			callback(jsonObj);
-		}
+	    if (http_request.readyState == 4  ){
+		    var jsonObj = JSON.parse(http_request.responseText);
+		    callback(jsonObj);
+	    }
 	}
 
 	http_request.open("GET", url, true);
@@ -116,8 +120,6 @@ function toggleViralTweetEl(event) {
 	};
 }
 
-var means = [];
-
 d3.csv('data/cruz', function(error, data) {
 
 	data.forEach(function(d) {
@@ -129,14 +131,6 @@ d3.csv('data/cruz', function(error, data) {
 		}
 		d.tweet_count = +d.tweet_count
 	});
-
-	var sentimentSum = 0;
-	data.forEach(function(d) {
-		if (d.sentiment) {
-			sentimentSum += d.sentiment;
-		}
-	});
-	means.push({'candidate': 'Cruz', 'mean': sentimentSum / data.length, 'color': 'orange'});
 
 	pixelsPerDatapoint = 4
 	viewLengthPixels = pixelsPerDatapoint * data.length;
@@ -273,14 +267,6 @@ d3.csv('data/cruz', function(error, data) {
 			d.tweet_count = +d.tweet_count
 		});
 
-		var sentimentSum = 0;
-		data2.forEach(function(d) {
-			if (d.sentiment) {
-				sentimentSum += d.sentiment;
-			}
-		});
-		means.push({'candidate': 'Clinton', 'mean': sentimentSum / data2.length, 'color': 'green'});
-
 		vis.append('svg:path')
 			.attr('d', lineGen(data2))
 			.attr('stroke', 'green')
@@ -307,14 +293,6 @@ d3.csv('data/cruz', function(error, data) {
 			}
 		d.tweet_count = +d.tweet_count
 		});
-
-		var sentimentSum = 0;
-		data2.forEach(function(d) {
-			if (d.sentiment) {
-				sentimentSum += d.sentiment;
-			}
-		});
-		means.push({'candidate': 'Trump', 'mean': sentimentSum / data2.length, 'color': 'red'});
 
 		vis.append('svg:path')
 			.attr('d', lineGen(data2))
@@ -343,14 +321,6 @@ d3.csv('data/cruz', function(error, data) {
 			d.tweet_count = +d.tweet_count
 		});
 
-		var sentimentSum = 0;
-		data2.forEach(function(d) {
-			if (d.sentiment) {
-				sentimentSum += d.sentiment;
-			}
-		});
-		means.push({'candidate': 'Sanders', 'mean': sentimentSum / data2.length, 'color': 'blue'});
-
 		vis.append('svg:path')
 			.attr('d', lineGen(data2))
 			.attr('stroke', 'blue')
@@ -364,100 +334,7 @@ d3.csv('data/cruz', function(error, data) {
 			.attr('fill', 'none')
 			.style("stroke-dasharray", ("1, 1"));
 
-		// means plot
-
-		means = means.reverse();
-
-		var margin = {top: 20, right: 20, bottom: 30, left: 40};
-		var w = 300 - margin.left - margin.right;
-		var h = 100 - margin.top - margin.bottom;
-
-		var svg = d3.select("#means")
-				.append("svg")
-				.attr("width", w)
-				.attr("height", h);
-
-		var x = d3.scale.linear()
-			.domain([-0.5, 0.5])
-			.range([0, w]);
-
-		var y = d3.scale.ordinal()
-			.domain(means.map(function (d) {return d.candidate; }))
-			.rangeRoundBands([0, h], 0.05);
-
-		var yAxis = d3.svg.axis()
-			.scale(y)
-			.orient("left");
-
-		svg.append("g")
-			.attr("class", "y axis")
-			.attr("transform", "translate(" + (margin.left) + ",0)")
-			.call(yAxis)
-			.selectAll("text")
-				.attr("fill", function(d) { return d.color; });
-		
-		svg.selectAll("rect")
-			.data(means)
-			.enter().append("svg:rect")
-				.attr("fill", function(d) { return d.color; })
-				.attr("y", function(d) { return y(d.candidate); })
-				.attr("x", margin.left)
-				.attr("height", y.rangeBand())
-				.attr("width", function(d) {
-					return x(d.mean);
-				});
-
 	});
-
-	// x = d3.scale.ordinal().rangeRoundBands([0, 300], .05);
-	
-	// height = 100;
-
-	// y = d3.scale.linear()
-	// 	// .domain([Math.min(meanCruz, meanTrump, meanClinton, meanSanders), Math.max(meanCruz, meanTrump, meanClinton, meanSanders)])
-	// 	.range([-0.5,0.5]);
-
-	// var xAxis = d3.svg.axis()
-	// 	.scale(x)
-	// 	.orient("bottom");
-
-	// var yAxis = d3.svg.axis()
-	// 	.scale(y)
-	// 	.orient("left")
-	// 	.ticks(5);
-
-	// var svg = d3.select("#legend").append("svg")
-	// 	.attr("width", 300)
-	// 	.attr("height", height);
-
-	// x.domain(data.map(function(d) { return d.letter; }));
-	// y.domain([0, d3.max(data, function(d) { return d.frequency; })]);
-
-	// svg.append("g")
-	//   .attr("class", "x axis")
-	//   .attr("transform", "translate(0," + height + ")")
-	//   .call(xAxis);
-
-	// svg.append("g")
-	//   .attr("class", "y axis")
-	//   .call(yAxis)
-	// .append("text")
-	//   .attr("transform", "rotate(-90)")
-	//   .attr("y", 6)
-	//   .attr("dy", ".71em")
-	//   .style("text-anchor", "end")
-	//   .text("Frequency");
-
-	// svg.selectAll("bar")
-	// 	.data(means)
-	// 	.enter().append("rect")
-	// 		.style("fill", "steelblue")
-	// 		.attr("x", function(d) { return x(d.candidate); })
-	// 		.attr("width", x.rangeBand())
-	// 		.attr("y", function(d) { return y(d.mean); })
-	// 		.attr("height", function(d) { return height - y(d.mean); });
-
-	// viral tweets
 
 	loadJSON('viraltweets.json', function(viraltweets) {
 

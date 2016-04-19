@@ -190,7 +190,8 @@ def main():
 			# get downsampled data
 			conn = sqlite3.connect(downsampled_db)
 			c = conn.cursor()
-			c.execute('''SELECT * FROM '''+candidate+''';''')
+			c.execute('''SELECT * FROM '''+candidate+''' WHERE datetime > 1459456469;''')
+    			# 1459456469 is the epoch time after which I started recording tweetIDs
 			rows = c.fetchall()
 			conn.close()
 

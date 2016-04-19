@@ -68,6 +68,9 @@ twitter_credentials.py
 *.csv
 *.json
 *.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
 
 # misc
 .DS_store

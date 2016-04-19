@@ -89,7 +89,7 @@ def main():
 			o.close()
 			f.close()
 
-	R = 60 * 30 # run every 30 minutes
+	R = 30 * 60 # run every half hour
 
 	s = sched.scheduler(time.time, time.sleep)
 	def do_something(sc):
@@ -101,10 +101,10 @@ def main():
 		files_clinton = sorted([fn for fn in files if 'data_clinton' in fn and not 'downsampled' in fn])
 		files_cruz = sorted([fn for fn in files if 'data_cruz' in fn and not 'downsampled' in fn])
 
-		downsample(files_sanders, '../jeroendelcour.nl/public/2016election/data_sanders_downsampled.csv', R)
-		downsample(files_trump, '../jeroendelcour.nl/public/2016election/data_trump_downsampled.csv', R)
-		downsample(files_clinton, '../jeroendelcour.nl/public/2016election/data_clinton_downsampled.csv', R)
-		downsample(files_cruz, '../jeroendelcour.nl/public/2016election/data_cruz_downsampled.csv', R)
+		downsample(files_sanders, './data_sanders_downsampled.csv', R)
+		downsample(files_trump, './data_trump_downsampled.csv', R)
+		downsample(files_clinton, './data_clinton_downsampled.csv', R)
+		downsample(files_cruz, './data_cruz_downsampled.csv', R)
 		sc.enter(R, 1, do_something, (sc,))
 
 	s.enter(1, 1, do_something, (s,))
