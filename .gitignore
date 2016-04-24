@@ -71,6 +71,7 @@ twitter_credentials.py
 *.sqlite-journal
 *.sqlite-wal
 *.sqlite-shm
+"data backup"
 
 # misc
 .DS_store
