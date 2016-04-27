@@ -221,7 +221,7 @@ def main():
 			for p in peaks:
 				
 				# get most common tweetID during the peak
-				conn = sqlite3.connect(sqlitefile)
+				conn = sqlite3.connect(db)
 				c = conn.cursor()
 				c.execute('''
 				SELECT datetime, tweetID FROM '''+candidate+'''
