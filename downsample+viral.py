@@ -7,7 +7,7 @@ def main():
 	import numpy as np
 	import os, sched, time, sqlite3, json
 
-	bin_size = 30 * 60 # 30 minutes, in seconds
+	bin_size = 60 * 60 * 2 # 2 hours, in seconds
 
 	db = 'data.sqlite'
 	downsampled_db = '../jeroendelcour.nl/2016election/data_downsampled.sqlite'
@@ -66,7 +66,7 @@ def main():
 	
 	def downsample():
 
-		min_tweets = 100 # minimum number of tweets for a valid entry
+		min_tweets = 1000 # minimum number of tweets for a valid entry
 
 		for candidate in candidates:
 			
