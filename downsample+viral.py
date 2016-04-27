@@ -209,13 +209,13 @@ def main():
 			tps_diff_peaks = get_peaks(data_diff[:,[0,2]], tps_diff_threshold)
 
 			# find most common tweetID of each peak
-				if len(sentiment_diff_peaks) >= 1:
-					if len(tps_diff_peaks) >= 1:
-						peaks = np.sort(np.vstack((sentiment_diff_peaks, tps_diff_peaks)), axis=0)
-					else:
-						peaks = sentiment_diff_peaks
+			if len(sentiment_diff_peaks) >= 1:
+				if len(tps_diff_peaks) >= 1:
+					peaks = np.sort(np.vstack((sentiment_diff_peaks, tps_diff_peaks)), axis=0)
 				else:
-					peaks = tps_diff_peaks
+					peaks = sentiment_diff_peaks
+			else:
+				peaks = tps_diff_peaks
 			top_tweets = []
 			prev_top_tweet = None
 			for p in peaks:
