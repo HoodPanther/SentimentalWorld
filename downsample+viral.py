@@ -42,9 +42,9 @@ def main():
 
 	def diff_smooth(x, n):
 		a = np.zeros_like(x)
-		for i in range(len(x)-n):
+		for i in range(int(round(n/2)),len(x)-n):
 			i += n
-			a[i] = np.nanmean(x[i:i+n], axis=0) - np.nanmean(x[i-n:i], axis=0)
+			a[i] = np.nanmean(x[i-int(round(n/2)):i+int(round(n/2))], axis=0) - np.nanmean(x[i-n:i], axis=0)
 		return a
 
 	def get_peaks(x, threshold):
@@ -191,7 +191,7 @@ def main():
 			conn = sqlite3.connect(downsampled_db)
 			c = conn.cursor()
 			c.execute('''SELECT * FROM '''+candidate+''' WHERE datetime > 1459456469;''')
-    			# 1459456469 is the epoch time after which I started recording tweetIDs
+				# 1459456469 is the epoch time after which I started recording tweetIDs
 			rows = c.fetchall()
 			conn.close()
 
@@ -199,8 +199,8 @@ def main():
 
 			# calculate derivative of sentiment and tweets per bin
 			data_diff = rows.copy()
-			data_diff[:,1] = np.abs(diff_smooth(rows[:,1], 10))
-			data_diff[:,2] = diff_smooth(rows[:,2], 2)
+			data_diff[:,1] = np.abs(diff_smooth(rows[:,1], 2))
+			data_diff[:,2] = diff_smooth(rows[:,2], 1)
 
 			# get peaks above a threshold
 			sentiment_diff_threshold = np.std(data_diff[:,1])*3
@@ -209,18 +209,24 @@ def main():
 			tps_diff_peaks = get_peaks(data_diff[:,[0,2]], tps_diff_threshold)
 
 			# find most common tweetID of each peak
-			peaks = np.sort(np.vstack((sentiment_diff_peaks, tps_diff_peaks)), axis=0)
+				if len(sentiment_diff_peaks) >= 1:
+					if len(tps_diff_peaks) >= 1:
+						peaks = np.sort(np.vstack((sentiment_diff_peaks, tps_diff_peaks)), axis=0)
+					else:
+						peaks = sentiment_diff_peaks
+				else:
+					peaks = tps_diff_peaks
 			top_tweets = []
 			prev_top_tweet = None
 			for p in peaks:
 				
 				# get most common tweetID during the peak
-				conn = sqlite3.connect(db)
+				conn = sqlite3.connect(sqlitefile)
 				c = conn.cursor()
 				c.execute('''
 				SELECT datetime, tweetID FROM '''+candidate+'''
-				WHERE datetime > '''+str('%f' % p[0])+'''
-				AND datetime < '''+str('%f' % p[1])+''';
+				WHERE datetime BETWEEN '''+str('%f' % p[0])+'''
+				AND '''+str('%f' % p[1])+''';
 				''')
 				rows = c.fetchall()
 				conn.close()
