@@ -203,8 +203,8 @@ def main():
 			data_diff[:,2] = diff_smooth(rows[:,2], 1)
 
 			# get peaks above a threshold
-			sentiment_diff_threshold = np.std(data_diff[:,1])*3
-			tps_diff_threshold = np.std(data_diff[:,2])*3
+			sentiment_diff_threshold = np.std(data_diff[:,1])*1.5
+			tps_diff_threshold = np.std(data_diff[:,2])*1.5
 			sentiment_diff_peaks = get_peaks(data_diff[:,[0,1]], sentiment_diff_threshold)
 			tps_diff_peaks = get_peaks(data_diff[:,[0,2]], tps_diff_threshold)
 
