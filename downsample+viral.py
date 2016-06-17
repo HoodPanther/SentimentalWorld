@@ -181,7 +181,12 @@ def main():
 							sentiments = []
 							tweet_count = 0
 
-	def get_viral_tweets():
+	def get_viral_tweets(since):
+
+		if since:
+			print 'Getting viral tweets (since '+str(since)+')...'
+		else:
+			print 'Getting ALL viral tweets...'
 
 		viral_tweets = {}
 
@@ -191,7 +196,7 @@ def main():
 			conn = sqlite3.connect(downsampled_db)
 			c = conn.cursor()
 			c.execute('''SELECT * FROM '''+candidate+''' WHERE datetime > 1459456469;''')
-				# 1459456469 is the epoch time after which I started recording tweetIDs
+			# 1459456469 is the epoch time after which I started recording tweetIDs
 			rows = c.fetchall()
 			conn.close()
 
@@ -202,11 +207,17 @@ def main():
 			data_diff[:,1] = np.abs(diff_smooth(rows[:,1], 2))
 			data_diff[:,2] = diff_smooth(rows[:,2], 1)
 
-			# get peaks above a threshold
+			# set threshold
 			sentiment_diff_threshold = np.nanstd(data_diff[:,1])*3
 			tps_diff_threshold = np.nanstd(data_diff[:,2])*2
-			sentiment_diff_peaks = get_peaks(data_diff[:,[0,1]], sentiment_diff_threshold)
-			tps_diff_peaks = get_peaks(data_diff[:,[0,2]], tps_diff_threshold)
+
+			# get peaks above threshold
+			if since: # only search for peaks since provided date
+				data_selected = data_diff[data_diff[:,0] > since]
+			else:
+				data_selected = data_diff
+			sentiment_diff_peaks = get_peaks(data_selected[1:,[0,1]], sentiment_diff_threshold)
+			tps_diff_peaks = get_peaks(data_selected[1:,[0,2]], tps_diff_threshold)
 
 			# find most common tweetID of each peak
 			if len(sentiment_diff_peaks) >= 1:
@@ -251,8 +262,20 @@ def main():
 			
 			viral_tweets[candidate] = top_tweets
 
-		with open('../jeroendelcour.nl/public/2016election/viraltweets.json', 'w') as f:
-			json.dump(viral_tweets, f, indent=4)
+		if since: # replace any previously found viral tweets during this since with the new ones
+			with open('../jeroendelcour.nl/public/2016election/viraltweets.json', 'r') as f:
+				fjson = json.load(f)
+				for i,c in enumerate(fjson.itervalues()):
+					for j,t in enumerate(c):
+						if int(t['datetime']) > since:
+							c.pop(j)
+					for t in viral_tweets[fjson.keys()[i]]:
+						c.append(t)
+			with open('../jeroendelcour.nl/public/2016election/viraltweets.json', 'w') as f:
+				json.dump(fjson, f, indent=4)
+		else:
+			with open('../jeroendelcour.nl/public/2016election/viraltweets.json', 'w') as f:
+				json.dump(viral_tweets, f, indent=4)
 
 	R = bin_size
 
@@ -262,8 +285,7 @@ def main():
 		print 'Downsampling...'
 		downsample()
 		print 'Done.'
-		print 'Getting viral tweets...'
-		get_viral_tweets()
+		get_viral_tweets(since=time.time()-60*60*24*7) # past 7 days
 		print 'Done.'
 
 		sc.enter(R, 1, do_things, (sc,))
