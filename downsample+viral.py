@@ -81,45 +81,79 @@ def main():
 
 				conn = sqlite3.connect(db)
 				c = conn.cursor()
-				c.execute('''SELECT * FROM '''+candidate+''';''')
-				all_rows = c.fetchall()
+				c.execute('''SELECT datetime FROM '''+candidate+''' LIMIT 1;''')
+				start_datetime = c.fetchone()[0]
 				conn.close()
-				
-				prev_time = None
-				sentiments = []
-				tweet_count = 0
-				for row in all_rows:
-					sentiments.append(row[1])
-					tweet_count += 1
-					if not prev_time:
-						prev_time = row[0]
-						continue
-					time = row[0]
-					if time - prev_time > bin_size:
-						# we've passed bin_size, wrap it up
-						if time - prev_time > bin_size*2:
-							# more than 2 bin_sizes have passed, we're missing data. Add an empty entry.
-							conn = sqlite3.connect(downsampled_db)
-							c = conn.cursor()
-							c.execute('PRAGMA journal_mode=wal')
-							c.execute('''INSERT INTO '''+candidate+'''(datetime, sentiment, tweet_count) VALUES (?,?,?);''',
-									 (time - (time-prev_time)/2, None, tweet_count))
-							conn.commit()
-							conn.close()
-							prev_time = time
-							sentiments = []
-							tweet_count = 0
-						elif tweet_count >= min_tweets: # check if we have a reasonable number of tweets to get a mean sentiment from
-							conn = sqlite3.connect(downsampled_db)
-							c = conn.cursor()
-							c.execute('PRAGMA journal_mode=wal')
-							c.execute('''INSERT INTO '''+candidate+'''(datetime, sentiment, tweet_count) VALUES (?,?,?);''',
-									 (time - (time-prev_time)/2, np.mean(sentiments), tweet_count))
-							conn.commit()
-							conn.close()
-							prev_time = time
-							sentiments = []
-							tweet_count = 0
+
+				step_size = bin_size*100;
+				for i in np.arange(start_datetime, time.time(), step_size):
+
+					conn = sqlite3.connect(db)
+					c = conn.cursor()
+					c.execute('''SELECT * FROM '''+candidate+''' WHERE datetime BETWEEN '''+str(i)+''' AND '''+str(i+step_size)+''';''')
+					all_rows = c.fetchall()
+					conn.close()
+					
+					prev_time = None
+					sentiments = []
+					tweet_count = 0
+					for row in all_rows:
+						sentiments.append(row[1])
+						tweet_count += 1
+						if not prev_time:
+							prev_time = row[0]
+							continue
+						rowtime = row[0]
+						if (rowtime - prev_time > bin_size) and (tweet_count >= min_tweets):
+							# we've passed bin_size, wrap it up
+							if rowtime - prev_time > bin_size*2:
+								# more than 2 bin sizes have passed, we're missing data. Add an empty entry.
+								conn = sqlite3.connect(downsampled_db)
+								c = conn.cursor()
+								c.execute('PRAGMA journal_mode=wal')
+								c.execute('''INSERT INTO '''+candidate+'''(datetime, sentiment, tweet_count) VALUES (?,?,?);''',
+										 (rowtime - (rowtime-prev_time)/2, None, tweet_count))
+								conn.commit()
+								conn.close()
+								prev_time = rowtime
+								sentiments = []
+								tweet_count = 0
+							else:
+								conn = sqlite3.connect(downsampled_db)
+								c = conn.cursor()
+								c.execute('PRAGMA journal_mode=wal')
+								c.execute('''INSERT INTO '''+candidate+'''(datetime, sentiment, tweet_count) VALUES (?,?,?);''',
+										 (rowtime - (rowtime-prev_time)/2, np.mean(sentiments), tweet_count))
+								conn.commit()
+								conn.close()
+								prev_time = rowtime
+								sentiments = []
+								tweet_count = 0
+
+					# finish up last bin (since it won't trigger the above if statement)
+					if rowtime - prev_time > bin_size*2 or tweet_count < min_tweets:
+						# more than 2 bin sizes have passed, we're missing data. Or we don't have enough tweets. Add an empty entry.
+						conn = sqlite3.connect(downsampled_db)
+						c = conn.cursor()
+						c.execute('PRAGMA journal_mode=wal')
+						c.execute('''INSERT INTO '''+candidate+'''(datetime, sentiment, tweet_count) VALUES (?,?,?);''',
+								 (rowtime - (rowtime-prev_time)/2, None, tweet_count))
+						conn.commit()
+						conn.close()
+						prev_time = time
+						sentiments = []
+						tweet_count = 0
+					else:
+						conn = sqlite3.connect(downsampled_db)
+						c = conn.cursor()
+						c.execute('PRAGMA journal_mode=wal')
+						c.execute('''INSERT INTO '''+candidate+'''(datetime, sentiment, tweet_count) VALUES (?,?,?);''',
+								 (rowtime - (rowtime-prev_time)/2, np.mean(sentiments), tweet_count))
+						conn.commit()
+						conn.close()
+						prev_time = rowtime
+						sentiments = []
+						tweet_count = 0
 				
 			else: # table is not empty
 				
@@ -156,28 +190,29 @@ def main():
 						if not prev_time:
 							prev_time = row[0]
 							continue
-						time = row[0]
-						if time - prev_time > bin_size:
+						rowtime = row[0]
+						if rowtime - prev_time > bin_size and tweet_count >= min_tweets:
 							# we've passed bin_size, wrap it up
-							if time - prev_time > bin_size*2:
-								# more than 2 bin_sizes have passed, we're missing data. Add an empty entry.
+							if rowtime - prev_time > bin_size*2:
+								# more than 2 bin sizes have passed, we're missing data. Add an empty entry.
 								conn = sqlite3.connect(downsampled_db)
 								c = conn.cursor()
 								c.execute('PRAGMA journal_mode=wal')
 								c.execute('''INSERT INTO '''+candidate+'''(datetime, sentiment, tweet_count) VALUES (?,?,?);''',
-										 (time - (time-prev_time)/2, None, tweet_count))
+										 (rowtime - (rowtime-prev_time)/2, None, tweet_count))
 								conn.commit()
 								conn.close()
-							elif tweet_count >= min_tweets: # check if we have a reasonable number of tweets to get a mean sentiment from
+							else:
+							# elif tweet_count >= min_tweets: # check if we have a reasonable number of tweets to get a mean sentiment
 								conn = sqlite3.connect(downsampled_db)
 								c = conn.cursor()
 								c.execute('PRAGMA journal_mode=wal')
 								c.execute('''INSERT INTO '''+candidate+'''(datetime, sentiment, tweet_count) VALUES (?,?,?);''',
-										 (time - (time-prev_time)/2, np.mean(sentiments), tweet_count))
+										 (rowtime - (rowtime-prev_time)/2, np.mean(sentiments), tweet_count))
 								conn.commit()
 								conn.close()
 							
-							prev_time = time
+							prev_time = rowtime
 							sentiments = []
 							tweet_count = 0
 
