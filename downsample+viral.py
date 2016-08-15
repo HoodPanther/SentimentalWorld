@@ -9,7 +9,7 @@ def main():
 
 	bin_size = 60 * 60 * 2 # 2 hours, in seconds
 
-	db = 'data.sqlite'
+	db = 'data backup/data_backup.sqlite'
 	downsampled_db = '../jeroendelcour.nl/2016election/data_downsampled.sqlite'
 
 	if not os.path.isfile(db):
@@ -228,6 +228,7 @@ def main():
 		for candidate in candidates:
 
 			# get downsampled data
+			print 'Getting downsampled data for {}...'.format(candidate)
 			conn = sqlite3.connect(downsampled_db)
 			c = conn.cursor()
 			c.execute('''SELECT * FROM '''+candidate+''' WHERE datetime > 1459456469;''')
@@ -238,6 +239,7 @@ def main():
 			rows = np.array(rows).astype(np.float32)
 
 			# calculate derivative of sentiment and tweets per bin
+			print 'Calculating derivatives...'
 			data_diff = rows.copy()
 			data_diff[:,1] = np.abs(diff_smooth(rows[:,1], 2))
 			data_diff[:,2] = diff_smooth(rows[:,2], 1)
@@ -246,6 +248,7 @@ def main():
 			sentiment_diff_threshold = np.nanstd(data_diff[:,1])*3
 			tps_diff_threshold = np.nanstd(data_diff[:,2])*2
 
+			print 'Finding peaks...'
 			# get peaks above threshold
 			if since: # only search for peaks since provided date
 				data_selected = data_diff[data_diff[:,0] > since]
@@ -255,6 +258,7 @@ def main():
 			tps_diff_peaks = get_peaks(data_selected[1:,[0,2]], tps_diff_threshold)
 
 			# find most common tweetID of each peak
+			print 'Finding most comment tweetID for each peak...'
 			if len(sentiment_diff_peaks) >= 1:
 				if len(tps_diff_peaks) >= 1:
 					peaks = np.sort(np.vstack((sentiment_diff_peaks, tps_diff_peaks)), axis=0)
@@ -297,6 +301,7 @@ def main():
 			
 			viral_tweets[candidate] = top_tweets
 
+		print 'Saving result to file...'
 		if since: # replace any previously found viral tweets during this since with the new ones
 			with open('../jeroendelcour.nl/public/2016election/viraltweets.json', 'r') as f:
 				fjson = json.load(f)
@@ -311,6 +316,7 @@ def main():
 		else:
 			with open('../jeroendelcour.nl/public/2016election/viraltweets.json', 'w') as f:
 				json.dump(viral_tweets, f, indent=4)
+		print 'Done with {}'.format(candidate)
 
 	R = bin_size
 
@@ -320,7 +326,7 @@ def main():
 		print 'Downsampling...'
 		downsample()
 		print 'Done.'
-		get_viral_tweets(since=time.time()-60*60*24*7) # past 7 days
+		get_viral_tweets(since=time.time()-60*60*24*3) # past 3 days
 		print 'Done.'
 
 		sc.enter(R, 1, do_things, (sc,))
