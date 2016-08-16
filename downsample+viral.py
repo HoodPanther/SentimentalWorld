@@ -9,7 +9,7 @@ def main():
 
 	bin_size = 60 * 60 * 2 # 2 hours, in seconds
 
-	db = 'data backup/data_backup.sqlite'
+	db = 'data.sqlite'
 	downsampled_db = '../jeroendelcour.nl/2016election/data_downsampled.sqlite'
 
 	if not os.path.isfile(db):
@@ -69,6 +69,8 @@ def main():
 		min_tweets = 1000 # minimum number of tweets for a valid entry
 
 		for candidate in candidates:
+
+			print 'Downsampling {}'.format(candidate)
 			
 			conn = sqlite3.connect(downsampled_db)
 			c = conn.cursor()
@@ -226,6 +228,8 @@ def main():
 		viral_tweets = {}
 
 		for candidate in candidates:
+
+			print 'Getting viral tweets for {}'.format(candidate)
 
 			# get downsampled data
 			print 'Getting downsampled data for {}...'.format(candidate)
