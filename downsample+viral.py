@@ -282,7 +282,7 @@ def main():
 				WHERE datetime BETWEEN '''+str('%f' % p[0])+'''
 				AND '''+str('%f' % p[1])+''' GROUP BY tweetid ORDER BY COUNT(tweetid) DESC LIMIT 1;
 				''')
-				top_tweet = c.fetchone()
+				top_tweet = c.fetchone()[0]
 				conn.close()
 
 				if top_tweet == None:
