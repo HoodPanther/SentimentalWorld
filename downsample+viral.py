@@ -278,21 +278,12 @@ def main():
 				conn = sqlite3.connect(db)
 				c = conn.cursor()
 				c.execute('''
-				SELECT datetime, tweetID FROM '''+candidate+'''
+				SELECT tweetid, COUNT(tweetid) FROM '''+candidate+'''
 				WHERE datetime BETWEEN '''+str('%f' % p[0])+'''
-				AND '''+str('%f' % p[1])+''';
+				AND '''+str('%f' % p[1])+''' GROUP BY tweetid ORDER BY COUNT(tweetid) DESC LIMIT 1;
 				''')
-				rows = c.fetchall()
+				top_tweet = c.fetchone()
 				conn.close()
-
-				rows = np.array(rows)
-				
-				if len(rows) < 1:
-					continue
-
-				(values,counts) = np.unique(rows[:,1],return_counts=True)
-				ind=np.argmax(counts)
-				top_tweet = values[ind]
 
 				if top_tweet == None:
 					continue
@@ -330,7 +321,7 @@ def main():
 		print 'Downsampling...'
 		downsample()
 		print 'Done.'
-		get_viral_tweets(since=time.time()-60*60*24*3) # past 3 days
+		get_viral_tweets(since=time.time()-60*60*24*7) # past 7 days
 		print 'Done.'
 
 		sc.enter(R, 1, do_things, (sc,))
