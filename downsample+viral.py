@@ -218,6 +218,9 @@ def main():
 							sentiments = []
 							tweet_count = 0
 
+				del rows
+				del sentiments
+
 	def get_viral_tweets(since):
 
 		if since:
@@ -315,7 +318,7 @@ def main():
 
 	R = bin_size
 
-	s = sched.scheduler(time.time, time.sleep)
+	# s = sched.scheduler(time.time, time.sleep)
 	def do_things(sc):
 
 		print 'Downsampling...'
@@ -324,10 +327,11 @@ def main():
 		get_viral_tweets(since=time.time()-60*60*24*7) # past 7 days
 		print 'Done.'
 
-		sc.enter(R, 1, do_things, (sc,))
+		# sc.enter(R, 1, do_things, (sc,))
 
-	s.enter(1, 1, do_things, (s,))
-	s.run()
+	# s.enter(1, 1, do_things, (s,))
+	# s.run()
+	do_things()
 
 
 if __name__ == '__main__': main()
