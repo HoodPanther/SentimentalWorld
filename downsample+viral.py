@@ -319,7 +319,7 @@ def main():
 	R = bin_size
 
 	# s = sched.scheduler(time.time, time.sleep)
-	def do_things(sc):
+	def do_things():
 
 		print 'Downsampling...'
 		downsample()
