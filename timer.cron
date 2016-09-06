@@ -1,0 +1,2 @@
+tmux send-keys -t downsample 'cd ~/SentimentalWorld' C-m
+tmux send-keys -t downsample 'python ./downsample+viral.py' C-m
