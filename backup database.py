@@ -7,7 +7,7 @@ def main():
 
 	import sqlite3, sqlitebck
 	conn1 = sqlite3.connect('data.sqlite')
-	conn2 = sqlite3.connect('data backup/data_backup.sqlite')
+	conn2 = sqlite3.connect('data_backup/data_backup.sqlite')
 	sqlitebck.copy(conn1, conn2)
 	conn1.close()
 	conn2.close()
