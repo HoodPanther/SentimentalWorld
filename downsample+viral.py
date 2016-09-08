@@ -3,7 +3,7 @@
 
 from __future__ import division
 import logging
-logging.basicConfig(filename='downsample+viral.log',format='%(asctime)s %(levelname)s: %(message)s',level=logging.INFO)
+logging.basicConfig(filename='downsample+viral.log',format='%(asctime)s %(levelname)s: %(message)s',level=logging.ERROR)
 
 def main():
 	import numpy as np
@@ -334,7 +334,10 @@ def main():
 
 	# s.enter(1, 1, do_things, (s,))
 	# s.run()
-	do_things()
+	try:
+		do_things()
+	except:
+		logging.exception("Oops:")
 
 
 if __name__ == '__main__': main()
